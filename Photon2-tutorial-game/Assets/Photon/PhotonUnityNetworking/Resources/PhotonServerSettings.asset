@@ -34,5 +34,9 @@ MonoBehaviour:
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - bulletDestroy
+  - isGameOver
+  - ShootBulletRPC
+  - takeDamageNetwork
   DisableAutoOpenWizard: 1
   ShowSettings: 0
