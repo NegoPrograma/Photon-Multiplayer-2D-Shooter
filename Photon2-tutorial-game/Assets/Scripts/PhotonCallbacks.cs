@@ -46,13 +46,6 @@ public class PhotonCallbacks : MonoBehaviourPunCallbacks
 
     }
 
-    public override void OnJoinRandomFailed(short returnCode, string message){
-        string randomGeneratedRoomName ="Room"+Random.Range(1,5000).ToString()+Random.Range(1,5000).ToString();
-        RoomOptions options = new RoomOptions();
-        options.IsOpen = true;
-        options.IsVisible = true;
-        PhotonNetwork.CreateRoom(randomGeneratedRoomName,options);
-    }
-
+   
 
 }

@@ -9,119 +9,100 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 public class PlayerController : MonoBehaviourPunCallbacks
 {
 
-    public float playerSpeed = 45f;
-    public PhotonView playerView;
+    public GameObject playerCamera;
+    public Rigidbody2D rigid;
+    public SpriteRenderer playerSprite;
+    public Animator playerAnimation;
+    public float playerSpeed = 8;
 
-    private Rigidbody2D rigid;
-
-    public bool isAlive;
-    public Vector2 playerAim;
-    public GameObject bulletSprite;
+    public GameObject playerBullet;
     public GameObject bulletSpawn;
-
-    public Image playerHealthHeader;
-    public float playerMaxHealth;
-    public float playerCurrentHealth;
-    void Start()
+    public PhotonView playerView;
+    public Vector2 bulletDirection;
+    void Awake()
     {
-        rigid = gameObject.GetComponent<Rigidbody2D>();
-        playerView = gameObject.GetComponent<PhotonView>();
-        playerMaxHealth = 100f;
-        playerCurrentHealth = playerMaxHealth;
-        isAlive = true;
+        
+        //configurando a camêra do player
+        if(photonView.IsMine){
+            playerCamera.SetActive(true);
+        }
     }
 
     void Update()
     {
         if(playerView.IsMine){
+           PlayerShoot();
             PlayerMove();
-            PlayerRotation();
-            if(Input.GetKeyDown(KeyCode.E)){
-               ShootBullet();
-            //    playerView.RPC("ShootBulletRPC",RpcTarget.All);
-            }
+           // playerView.RPC("PlayerShoot",RpcTarget.All,null);
+           
         }
     }
 
     public void PlayerMove(){
-        float x = Input.GetAxis("Horizontal");
-        float y = Input.GetAxis("Vertical");
-
-        rigid.velocity = new Vector2(x,y)*playerSpeed;
+        if(playerAnimation.GetBool("isShooting") == false){
+            var movement = new Vector3(Input.GetAxisRaw("Horizontal"),0);
+            transform.position += movement*playerSpeed*Time.deltaTime;
+            PlayerFlip();
+        }
     }
 
-    public void PlayerRotation(){
-        Vector3 mousePos = Input.mousePosition;
-
-        mousePos = Camera.main.WorldToScreenPoint(mousePos);
-
-        playerAim = new Vector2(
-            mousePos.x-transform.position.x,
-            mousePos.y-transform.position.y
-        );
-
-        transform.up = playerAim;
-    }
-
-    public void ShootBullet(){
-        PhotonNetwork.Instantiate("MyBullet",bulletSpawn.transform.position,bulletSpawn.transform.rotation);
-    }
-
-
-    [PunRPC]
-    public void ShootBulletRPC(){
-        Instantiate(this.bulletSprite,this.bulletSpawn.transform.position,this.bulletSpawn.transform.rotation);
-    }
-
-
-    public void takeDamage(float value,Player shotOwner){
-        playerView.RPC("takeDamageNetwork",RpcTarget.AllBuffered,value,shotOwner);
-    }
-
-
-    [PunRPC]
-    void takeDamageNetwork(float damage,Player shotOwner){
-        HealthUpdate(damage);
-        object playerPastScore;
-        shotOwner.CustomProperties.TryGetValue("Score",out playerPastScore);
-        int actualScore =(int) playerPastScore;
-        actualScore += 10;
-
-        Hashtable tempCustomProprierties = new Hashtable();
-        tempCustomProprierties.Add("Score",actualScore);
-        /*
-        Lembra que no joinRoom a gente seta umas proprierades?
-        ao chamar novamente o setCustomProperties o que acontece não é uma total substituição
-        e sim que o método verifica a hashtable que vc deu e se tiver uma chave igual a hashtable anterior
-        ele apenas atualiza o valor, sem interferir nos valores que possuem chaves diferentes.
+    public void PlayerFlip(){
+        bool rightMovementPressed =Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
+        bool rightMovementUnpressed =Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow);
+        bool leftMovementPressed =Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
+        bool leftMovementUnpressed =Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow);
+       
+       
+        if(rightMovementPressed){
+            playerAnimation.SetBool("isMoving",true);
+            photonView.RPC("PlayerFlipRPC_Right",RpcTarget.AllBuffered,null);
+            bulletDirection = new Vector2(1,0);
+        } 
+        else if(rightMovementUnpressed){
+                playerAnimation.SetBool("isMoving",false);
+        }
         
-        */
-        shotOwner.SetCustomProperties(tempCustomProprierties,null,null);
-            if(playerCurrentHealth <= 0 && isAlive){
-                playerView.RPC("isGameOver",RpcTarget.All);
+        
+        if(leftMovementPressed){
+            playerAnimation.SetBool("isMoving",true);
+            photonView.RPC("PlayerFlipRPC_Left",RpcTarget.AllBuffered,null);
+            bulletDirection = new Vector2(-1,0);
+        }
+        else if(leftMovementUnpressed){
+                playerAnimation.SetBool("isMoving",false);
+        }
+    }
+
+
+    [PunRPC]
+    private void PlayerFlipRPC_Right(){
+            playerSprite.flipX = false;
+    }
+
+    [PunRPC]
+    
+    private void PlayerFlipRPC_Left(){
+            playerSprite.flipX = true;
+    }
+
+
+    private void PlayerShoot(){
+            if(Input.GetKeyDown(KeyCode.O) && canShoot()){
+                this.playerAnimation.SetBool("isShooting",true);
+                GameObject bullet = PhotonNetwork.Instantiate(this.playerBullet.name,this.bulletSpawn.transform.position,Quaternion.identity,0,setBulletDirection());
+            }else if(Input.GetKeyUp(KeyCode.O)){
+                this.playerAnimation.SetBool("isShooting",false);
             }
-
-        //settando score pela Photon.Pun.UtilityScripts:
-        shotOwner.AddScore(10);            
-        
     }
 
-    [PunRPC]
-    void isGameOver(){
-        //o owner significa que esse objeto foi instanciado a partir do seu client
-                Debug.Log("GameOver");
-                isAlive = false;
-                //exibindo pontuação
-                foreach(var player in PhotonNetwork.PlayerList){
-                    object scoreObject;
-                    player.CustomProperties.TryGetValue("Score", out scoreObject);
-                    Debug.Log("Player name: "+ player.NickName + "\nPlayer score: " + scoreObject.ToString() + "\nPlayer score via Photon:"+ player.GetScore().ToString());
-                }
+    private object[] setBulletDirection(){
+        object[] dir = new object[1];
+        dir[0]= this.bulletDirection;
+        return dir;
     }
-
-
-    public void HealthUpdate(float damage){
-        this.playerCurrentHealth +=damage;
-        this.playerHealthHeader.fillAmount = this.playerCurrentHealth/100;
+    private bool canShoot(){
+        if(playerAnimation.GetBool("isMoving") == false)
+            return true;
+        return false;            
     }
 }

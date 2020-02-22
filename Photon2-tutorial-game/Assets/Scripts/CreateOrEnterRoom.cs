@@ -32,4 +32,8 @@ public class CreateOrEnterRoom : MonoBehaviourPunCallbacks{
         }
     }
 
+    public override void OnJoinRoomFailed(short returnCode, string message){
+        CreateRoom();
+    }
+
 }
