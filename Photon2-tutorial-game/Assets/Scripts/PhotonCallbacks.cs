@@ -8,7 +8,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class PhotonCallbacks : MonoBehaviourPunCallbacks
 {
-
+    
     public ScreenSwitch screenSwitch;
     public override void OnConnected(){
         Debug.Log("onConnected stage achieved: next one should be ConnectedToMaster");
@@ -36,8 +36,10 @@ public class PhotonCallbacks : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom(){
         Debug.Log("You're now inside a room.");
+        Debug.Log("Your nick:"+PhotonNetwork.NickName);
         //LoadLevel é uma função que carrega uma scene, sendo seu parâmetro a index da scene no build settings 
         PhotonNetwork.LoadLevel(1);
+        
     }
 
 

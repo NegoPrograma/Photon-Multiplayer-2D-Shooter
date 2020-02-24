@@ -8,9 +8,9 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
 {
 
     public void OnButtonClick(){
-        if(!SetNickname.nickname.Equals("")){
+        if(!PhotonNetwork.LocalPlayer.NickName.Equals("")){
             PhotonNetwork.ConnectUsingSettings();
-            Debug.Log("Welcome, " + SetNickname.nickname + ". You're now connecting to our servers.");
+            Debug.Log("Welcome, " + PhotonNetwork.LocalPlayer.NickName + ". You're now connecting to our servers.");
         }
     }
 

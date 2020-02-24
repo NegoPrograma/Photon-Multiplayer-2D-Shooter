@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using Photon.Pun;
 public class ScreenSwitch : MonoBehaviour
 {
-    [SerializeField]
-    private  GameObject loginScreen;
+    public GameObject loginScreen;
 
-    [SerializeField]
-    private  GameObject lobbyScreen;
+    public  GameObject lobbyScreen;
     void Start(){
         lobbyScreen.SetActive(false);
         loginScreen.SetActive(true);
     }
     public void toggleScreenState(){
-        if(!SetNickname.nickname.Equals("")){
+        if(!PhotonNetwork.NickName.Equals("")){
             lobbyScreen.SetActive(true);
             loginScreen.SetActive(false);
         }

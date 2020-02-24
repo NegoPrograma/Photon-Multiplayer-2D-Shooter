@@ -13,6 +13,7 @@ public class GameManagerScript : MonoBehaviour
     void Start()
     {
         canvas.SetActive(true);
+        SpawnPlayer();
     }
 
     public void SpawnPlayer(){

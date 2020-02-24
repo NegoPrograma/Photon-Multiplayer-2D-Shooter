@@ -43,5 +43,9 @@ MonoBehaviour:
   - moveBullet
   - PlayerShoot
   - DestroyBullet
+  - InitializeNickName
+  - InitializePlayer
+  - nameSync
+  - entered
   DisableAutoOpenWizard: 1
   ShowSettings: 0

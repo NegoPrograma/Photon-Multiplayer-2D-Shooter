@@ -6,16 +6,16 @@ using Photon.Pun;
 using Photon.Realtime;
 public class SetNickname : MonoBehaviour
 {
-    public static string nickname;
-    [SerializeField] private Text nicknameInputFieldTextComponent;
-    void Start() 
+    public string nickname;
+    public Text nicknameInputFieldTextComponent;
+    void Awake() 
     {
         nickname="";       
     }
 
     public void OnButtonClick(){
         nickname= nicknameInputFieldTextComponent.text;
-        PhotonNetwork.NickName = nickname;
+        PhotonNetwork.LocalPlayer.NickName = nickname;
     }
 
 }

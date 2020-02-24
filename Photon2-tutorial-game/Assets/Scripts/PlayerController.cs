@@ -5,8 +5,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
-public class PlayerController : MonoBehaviourPunCallbacks
+public class PlayerController : MonoBehaviourPunCallbacks//, IPunObservable
 {
 
     public GameObject playerCamera;
@@ -19,21 +18,50 @@ public class PlayerController : MonoBehaviourPunCallbacks
     public GameObject bulletSpawn;
     public PhotonView playerView;
     public Vector2 bulletDirection;
+    public Text playerName;
+    
     void Awake()
     {
-        
-        //configurando a camêra do player
-        if(photonView.IsMine){
+        if(playerView.IsMine && !playerName.text.Equals("")){
+            playerName.text = PhotonNetwork.NickName;
+            playerName.color = Color.cyan;
             playerCamera.SetActive(true);
+        }else if(playerName.text.Equals("") || !playerView.IsMine){
+            playerName.text = playerView.Owner.NickName;
+            playerName.color = Color.red;
         }
     }
+    
+    
 
+    
+    [PunRPC]
+    public void entered(){
+        Debug.Log(playerView.Owner.NickName + "has entered the room.");
+    }
+
+/*
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info){
+        if(stream.IsWriting){
+            stream.SendNext(playerName.text);
+        } 
+        else if(stream.IsReading){
+            if(this.playerView.IsMine){
+                playerName.text = (string) stream.ReceiveNext();
+                playerName.color = Color.cyan;
+            } 
+            if(!playerView.IsMine){
+            playerName.text = (string) stream.ReceiveNext();
+            playerName.color = Color.red;
+            }
+        }
+    }*/
     void Update()
     {
         if(playerView.IsMine){
-           PlayerShoot();
+            PlayerShoot();
             PlayerMove();
-           // playerView.RPC("PlayerShoot",RpcTarget.All,null);
+           //playerView.RPC("PlayerShoot",RpcTarget.All,null);
            
         }
     }
@@ -83,6 +111,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     
     private void PlayerFlipRPC_Left(){
             playerSprite.flipX = true;
+
     }
 
 
