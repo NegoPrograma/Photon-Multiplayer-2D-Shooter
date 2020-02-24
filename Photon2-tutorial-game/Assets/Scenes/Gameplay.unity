@@ -167,8 +167,7 @@ MonoBehaviour:
     type: 3}
   canvas: {fileID: 2059006179}
   sceneCamera: {fileID: 386016081}
-  clientView: {fileID: 3835494353699527490, guid: 53c07fd00fa870c4caac1345d5af1ba6,
-    type: 3}
+  playersJoined: []
 --- !u!1 &386016081
 GameObject:
   m_ObjectHideFlags: 0

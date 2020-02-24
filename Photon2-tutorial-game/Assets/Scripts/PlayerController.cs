@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
-public class PlayerController : MonoBehaviourPunCallbacks//, IPunObservable
+public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 {
 
     public GameObject playerCamera;
@@ -22,40 +22,36 @@ public class PlayerController : MonoBehaviourPunCallbacks//, IPunObservable
     
     void Awake()
     {
-        if(playerView.IsMine && !playerName.text.Equals("")){
+        if(playerView.IsMine){
             playerName.text = PhotonNetwork.NickName;
             playerName.color = Color.cyan;
             playerCamera.SetActive(true);
-        }else if(playerName.text.Equals("") || !playerView.IsMine){
+        }else{
             playerName.text = playerView.Owner.NickName;
             playerName.color = Color.red;
+            playerCamera.SetActive(false);
         }
     }
     
     
 
-    
-    [PunRPC]
-    public void entered(){
-        Debug.Log(playerView.Owner.NickName + "has entered the room.");
-    }
 
-/*
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info){
         if(stream.IsWriting){
             stream.SendNext(playerName.text);
         } 
         else if(stream.IsReading){
-            if(this.playerView.IsMine){
-                playerName.text = (string) stream.ReceiveNext();
-                playerName.color = Color.cyan;
+            string nick = (string) stream.ReceiveNext();
+            if(playerName.text.Equals(nick)){
+                this.playerName.text = PhotonNetwork.NickName;
+                this.playerName.color = Color.cyan;
             } 
-            if(!playerView.IsMine){
-            playerName.text = (string) stream.ReceiveNext();
-            playerName.color = Color.red;
+            if(!playerName.text.Equals(nick)){
+                playerName.text = nick;
+                playerName.color = Color.red;
             }
         }
-    }*/
+    }
     void Update()
     {
         if(playerView.IsMine){
