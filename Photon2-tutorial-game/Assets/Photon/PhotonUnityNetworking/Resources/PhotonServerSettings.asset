@@ -47,5 +47,8 @@ MonoBehaviour:
   - InitializePlayer
   - nameSync
   - entered
+  - TakeDamage
+  - KillPlayer
+  - RevivePlayer
   DisableAutoOpenWizard: 1
   ShowSettings: 0

@@ -16,7 +16,7 @@ public class BulletController : MonoBehaviourPun
 
     void Awake()
     {
-        bulletSpeed = 800f;
+        bulletSpeed = 1200f;
         bulletLifeTime = 5f;
         bulletDamage = 10;
         object[] dir = photonView.InstantiationData;
@@ -45,9 +45,9 @@ public class BulletController : MonoBehaviourPun
         //check if collided with a player prefab that isn't yours
         PlayerController collidedPlayer = collision.gameObject.GetComponent<PlayerController>();
         if(collidedPlayer != null){
-            if(!collidedPlayer.playerView.IsMine){
-                Debug.Log("Triggered!");
-                //bulletView.RPC("DestroyBullet",RpcTarget.All);
+            if(!collidedPlayer.playerView.IsMine && bulletView.Owner != collidedPlayer.playerView.Owner){
+                    
+                collidedPlayer.playerView.RPC("TakeDamage",RpcTarget.AllBuffered,bulletDamage);
                 DestroyBullet();
             }
         }

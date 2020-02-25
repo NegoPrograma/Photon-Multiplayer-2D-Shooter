@@ -14,15 +14,27 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public Animator playerAnimation;
     public float playerSpeed = 8;
 
+    public Image playerHealthBar;
+
+    public float playerMaxHealth;
+    public float playerCurrentHealth;
     public GameObject playerBullet;
     public GameObject bulletSpawn;
     public PhotonView playerView;
     public Vector2 bulletDirection;
     public Text playerName;
+
+    public GameObject playerCanvas;
+
+    public bool canInput;
     
     void Awake()
     {
+        canInput = true;
+        playerMaxHealth = 100;
+        playerCurrentHealth = playerMaxHealth;
         if(playerView.IsMine){
+            GameManagerScript.instance.localPlayer = this.gameObject;
             playerName.text = PhotonNetwork.NickName;
             playerName.color = Color.cyan;
             playerCamera.SetActive(true);
@@ -32,8 +44,43 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
             playerCamera.SetActive(false);
         }
     }
+
+
+
+    private void PlayerAtZeroHP(){
+        if(playerView.IsMine && playerCurrentHealth <= 0){
+            GameManagerScript.instance.EnableRespawn();
+            playerView.RPC("KillPlayer",RpcTarget.AllBuffered);
+        }
+    }
+
+    [PunRPC]
+
+    public void KillPlayer(){
+        playerSprite.enabled = false;
+        rigid.gravityScale = 0;
+        gameObject.GetComponent<Collider2D>().enabled = false;
+        playerCanvas.SetActive(false);
+        canInput = false;
+    }
+
+    [PunRPC]
+    public void RevivePlayer(){
+        playerSprite.enabled = true;
+        rigid.gravityScale = 1;
+        gameObject.GetComponent<Collider2D>().enabled = true;
+        playerCanvas.SetActive(true);
+        canInput = true;
+        playerHealthBar.fillAmount = 1;
+        playerCurrentHealth = 100;
+    }
     
-    
+    [PunRPC]
+    public void TakeDamage(float damage){
+        playerHealthBar.fillAmount -= damage/100;
+        playerCurrentHealth -= damage;
+        PlayerAtZeroHP();
+    }
 
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info){
@@ -54,7 +101,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     }
     void Update()
     {
-        if(playerView.IsMine){
+        if(playerView.IsMine && canInput){
             PlayerShoot();
             PlayerMove();
            //playerView.RPC("PlayerShoot",RpcTarget.All,null);
