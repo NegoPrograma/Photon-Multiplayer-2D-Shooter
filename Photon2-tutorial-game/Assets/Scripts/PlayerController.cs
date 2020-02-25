@@ -13,7 +13,6 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public SpriteRenderer playerSprite;
     public Animator playerAnimation;
     public float playerSpeed = 8;
-
     public Image playerHealthBar;
 
     public float playerMaxHealth;
@@ -24,12 +23,18 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public Vector2 bulletDirection;
     public Text playerName;
 
+    public bool isAlive;
+    public bool isGrounded = false;
+    public float jumpForce;
     public GameObject playerCanvas;
 
     public bool canInput;
     
     void Awake()
     {
+        bulletDirection = new Vector2(1,0);
+        jumpForce=800f;
+        isAlive = true;
         canInput = true;
         playerMaxHealth = 100;
         playerCurrentHealth = playerMaxHealth;
@@ -57,6 +62,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
 
     public void KillPlayer(){
+        isAlive = false;
         playerSprite.enabled = false;
         rigid.gravityScale = 0;
         gameObject.GetComponent<Collider2D>().enabled = false;
@@ -66,6 +72,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     [PunRPC]
     public void RevivePlayer(){
+        isAlive = true;
         playerSprite.enabled = true;
         rigid.gravityScale = 1;
         gameObject.GetComponent<Collider2D>().enabled = true;
@@ -104,6 +111,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         if(playerView.IsMine && canInput){
             PlayerShoot();
             PlayerMove();
+            PlayerJump();
            //playerView.RPC("PlayerShoot",RpcTarget.All,null);
            
         }
@@ -122,10 +130,12 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         bool rightMovementUnpressed =Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow);
         bool leftMovementPressed =Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
         bool leftMovementUnpressed =Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow);
-       
-       
-        if(rightMovementPressed){
+        bool isPressingMovementKey = Input.GetKey(KeyCode.A)||Input.GetKey(KeyCode.D)||Input.GetKey(KeyCode.LeftArrow)||Input.GetKey(KeyCode.RightArrow);
+
+        if(isPressingMovementKey)
             playerAnimation.SetBool("isMoving",true);
+        if(rightMovementPressed){
+            
             photonView.RPC("PlayerFlipRPC_Right",RpcTarget.AllBuffered,null);
             bulletDirection = new Vector2(1,0);
         } 
@@ -135,7 +145,6 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         
         
         if(leftMovementPressed){
-            playerAnimation.SetBool("isMoving",true);
             photonView.RPC("PlayerFlipRPC_Left",RpcTarget.AllBuffered,null);
             bulletDirection = new Vector2(-1,0);
         }
@@ -176,5 +185,26 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         if(playerAnimation.GetBool("isMoving") == false)
             return true;
         return false;            
+    }
+
+    void OnCollisionEnter2D(Collision2D col){
+        if(col.gameObject.tag == "Ground"){
+            isGrounded = true;
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D col){
+        if(col.gameObject.tag == "Ground"){
+            isGrounded = false;
+        }
+    }
+
+    void PlayerJump(){
+        if((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow)) && isGrounded){
+             rigid.AddForce(new Vector2(0,jumpForce),ForceMode2D.Force);
+             playerAnimation.SetBool("isJumping",true);
+        } else {
+             playerAnimation.SetBool("isJumping",false);
+        }
     }
 }

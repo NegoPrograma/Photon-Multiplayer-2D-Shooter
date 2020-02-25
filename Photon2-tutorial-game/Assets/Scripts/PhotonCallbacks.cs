@@ -30,7 +30,7 @@ public class PhotonCallbacks : MonoBehaviourPunCallbacks
 
     public override void OnJoinedLobby(){
         Debug.Log("You are now at the lobby.");
-        ///screenSwitch.toggleScreenState();
+        screenSwitch.toggleScreenState();
 
     }
 

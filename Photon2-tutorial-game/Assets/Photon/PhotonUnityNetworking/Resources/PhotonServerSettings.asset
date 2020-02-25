@@ -50,5 +50,6 @@ MonoBehaviour:
   - TakeDamage
   - KillPlayer
   - RevivePlayer
+  - SendMessage
   DisableAutoOpenWizard: 1
   ShowSettings: 0

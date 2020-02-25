@@ -6,7 +6,7 @@ using Photon.Pun;
 using Photon.Realtime;
 public class SetNickname : MonoBehaviour
 {
-    public static string nickname;
+    public static string nickname = "";
     public Text nicknameInputFieldTextComponent;
 
     void Awake(){
