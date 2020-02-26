@@ -651,6 +651,7 @@ GameObject:
   - component: {fileID: 5109203157086620313}
   - component: {fileID: 4173168295638232004}
   - component: {fileID: 6203519387197303023}
+  - component: {fileID: 236437005941629764}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -818,7 +819,7 @@ MonoBehaviour:
   OwnershipTransfer: 0
   ObservedComponents:
   - {fileID: 3835494353699527549}
-  - {fileID: 0}
+  - {fileID: 6203519387197303023}
   - {fileID: 5109203157086620313}
   viewIdField: 0
   InstantiationId: 0
@@ -888,7 +889,7 @@ MonoBehaviour:
   playerSprite: {fileID: 4836407291574494734}
   playerAnimation: {fileID: 4836407291574494732}
   playerSpeed: 8
-  playerHealthBar: {fileID: 687435022849563002}
+  playerHealthBar: {fileID: 4347528363258639079}
   playerMaxHealth: 0
   playerCurrentHealth: 0
   playerBullet: {fileID: 3879315620993784369, guid: 1bca3fa7f867afe4ba692766bc9244f3,
@@ -902,6 +903,19 @@ MonoBehaviour:
   jumpForce: 800
   playerCanvas: {fileID: 5610163516520594388}
   canInput: 0
+--- !u!114 &236437005941629764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4836407292497284474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a63640abc98dbb149ac3e383c6959e88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerSprite: {fileID: 4836407291574494734}
 --- !u!1 &5610163516520594388
 GameObject:
   m_ObjectHideFlags: 0
@@ -933,7 +947,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1778209408153389815}
-  - {fileID: 687435023378357191}
+  - {fileID: 4347528363258638901}
   m_Father: {fileID: 4836407292497284473}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1253,13 +1267,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5ca5740a47f46694c9c0bd3b6f35e491, type: 3}
---- !u!224 &687435023378357191 stripped
+--- !u!224 &4347528363258638901 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3882037466044459940, guid: 5ca5740a47f46694c9c0bd3b6f35e491,
     type: 3}
   m_PrefabInstance: {fileID: 4347528363258638435}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &687435022849563002 stripped
+--- !u!114 &4347528363258639079 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3882037465534114073, guid: 5ca5740a47f46694c9c0bd3b6f35e491,
     type: 3}

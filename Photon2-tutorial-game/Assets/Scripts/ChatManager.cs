@@ -7,7 +7,6 @@ using UnityEngine.SceneManagement;
 using Photon.Realtime;
 public class ChatManager : MonoBehaviourPun,IPunObservable
 {
-
     public PhotonView playerView;
     public GameObject bubbleSpeech;
     public Text chatText;

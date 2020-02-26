@@ -48,6 +48,7 @@ public class BulletController : MonoBehaviourPun
             if(!collidedPlayer.playerView.IsMine && bulletView.Owner != collidedPlayer.playerView.Owner){
                     
                 collidedPlayer.playerView.RPC("TakeDamage",RpcTarget.AllBuffered,bulletDamage);
+                collidedPlayer.GetComponent<HurtEffect>().GotHit();
                 DestroyBullet();
             }
         }
