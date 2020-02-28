@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-public class GameManagerScript : MonoBehaviour{
-
+public class GameManagerScript : MonoBehaviourPunCallbacks{
     public GameObject playerPrefab;
+
+    public GameObject connectedPlayersCanvas;
+    public ConnectedPlayersScript connectedPlayers;
     public GameObject exitCanvas;
     public GameObject sceneCamera;
+
+    public GameObject feedbox;
+    public GameObject feedText_Prefab;
 
     public int timesClicked = -1;
 
@@ -28,7 +34,8 @@ public class GameManagerScript : MonoBehaviour{
     }
     void Start()
     {
-        
+        connectedPlayers.AddLocalPlayer();
+        connectedPlayers.photonView.RPC("UpdatePlayerList",RpcTarget.AllBuffered,PhotonNetwork.NickName);
         SpawnPlayer();
     }
 
@@ -36,7 +43,13 @@ public class GameManagerScript : MonoBehaviour{
         if(startCountdown)
             StartRespawn();
         ToggleExitButton();
+
+        if(Input.GetKey(KeyCode.Tab)){
+            connectedPlayersCanvas.SetActive(true);
+        }else{
+            connectedPlayersCanvas.SetActive(false);
         }
+    }
 
     public void ToggleExitButton(){
          if(Input.GetKeyDown(KeyCode.Escape)){
@@ -82,6 +95,34 @@ public class GameManagerScript : MonoBehaviour{
         PhotonNetwork.LoadLevel(0);
         
     }
+
+
+    //PunCallbacks
+
+    public override void OnPlayerEnteredRoom(Player newPlayer){
+        GameObject feed = Instantiate(feedText_Prefab, new Vector2(0f,0f),Quaternion.identity);
+        feed.transform.SetParent(feedbox.transform);
+        feed.GetComponent<Text>().text = newPlayer.NickName + " has joined the game";
+        Destroy(feed, 3);
+    }
+
+    [PunRPC]
+    public void PlayerGotKilledBy(string victim, string assassin){
+        GameObject feed = Instantiate(feedText_Prefab, new Vector2(0f,0f),Quaternion.identity);
+        feed.transform.SetParent(feedbox.transform);
+        feed.GetComponent<Text>().text = victim + " got killed by " + assassin;
+        Destroy(feed, 3);
+    }
+    
+    public override void OnPlayerLeftRoom(Player otherPlayer){
+        connectedPlayers.RemovePlayerList(otherPlayer.NickName);
+        GameObject feed = Instantiate(feedText_Prefab, new Vector2(0f,0f),Quaternion.identity);
+        feed.transform.SetParent(feedbox.transform);
+        feed.GetComponent<Text>().text = otherPlayer.NickName + " has left the game";
+        Destroy(feed, 3);
+    
+    }
+
 
 
 }

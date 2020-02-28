@@ -180,6 +180,8 @@ MonoBehaviour:
   bulletDamage: 0
   bulletDirection: {x: 0, y: 0}
   bulletView: {fileID: 6898631134853491775}
+  bulletOwner: 
+  gameManager: {fileID: 0}
 --- !u!58 &8791457554274450958
 CircleCollider2D:
   m_ObjectHideFlags: 0

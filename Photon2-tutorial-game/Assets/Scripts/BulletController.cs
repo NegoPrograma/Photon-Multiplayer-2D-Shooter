@@ -12,15 +12,18 @@ public class BulletController : MonoBehaviourPun
     public float bulletDamage;
     public Vector2 bulletDirection;
     public PhotonView bulletView;
+    public string bulletOwner;
 
-
+    public GameManagerScript gameManager;
     void Awake()
     {
         bulletSpeed = 1200f;
         bulletLifeTime = 5f;
         bulletDamage = 10;
-        object[] dir = photonView.InstantiationData;
-        bulletDirection = (Vector2) dir[0];
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManagerScript>();
+        object[] data = photonView.InstantiationData;
+        bulletDirection = (Vector2) data[0];
+        bulletOwner =(string) data[1];
         //bulletView.RPC("moveBullet",RpcTarget.AllBuffered);
     }
 
@@ -46,9 +49,14 @@ public class BulletController : MonoBehaviourPun
         PlayerController collidedPlayer = collision.gameObject.GetComponent<PlayerController>();
         if(collidedPlayer != null){
             if(!collidedPlayer.playerView.IsMine && bulletView.Owner != collidedPlayer.playerView.Owner){
-                    
+                float playerHP = collidedPlayer.playerCurrentHealth-10;    
+                string playerName = collidedPlayer.playerName.text;
                 collidedPlayer.playerView.RPC("TakeDamage",RpcTarget.AllBuffered,bulletDamage);
                 collidedPlayer.GetComponent<HurtEffect>().GotHit();
+                if(playerHP == 0){
+                    gameManager.photonView.RPC("PlayerGotKilledBy",RpcTarget.All,playerName,bulletOwner);
+                    Debug.Log("yeah yeah its coming here!");
+                }
                 DestroyBullet();
             }
         }

@@ -14,13 +14,6 @@ public class PhotonCallbacks : MonoBehaviourPunCallbacks
         Debug.Log("onConnected stage achieved: next one should be ConnectedToMaster");
     }
 
-    public override void OnDisconnected(DisconnectCause cause){
-        Debug.Log("Error! "+ cause);
-        Debug.Log("Trying to return you to lobby.");
-        PhotonNetwork.Reconnect();
-        PhotonNetwork.JoinLobby();
-    }
-
     public override void OnConnectedToMaster(){
         Debug.Log("OnConnectedToMaster stage achieved, you're successfully connected to the server. you may enter the lobby now.");
         Debug.Log("Server hosted at: "+ PhotonNetwork.CloudRegion + ", your ping on connection:" + PhotonNetwork.GetPing());

@@ -29,9 +29,11 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public GameObject playerCanvas;
 
     public bool canInput;
+    public bool windowsPlatform;
     
     void Awake()
     {
+        windowsPlatform =(Application.platform==RuntimePlatform.WindowsEditor||Application.platform==RuntimePlatform.WindowsPlayer);
         bulletDirection = new Vector2(1,0);
         jumpForce=800f;
         isAlive = true;
@@ -52,11 +54,13 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
 
 
-    private void PlayerAtZeroHP(){
-        if(playerView.IsMine && playerCurrentHealth <= 0){
+    public bool PlayerAtZeroHP(){
+        if(playerView.IsMine && playerCurrentHealth == 0){
             GameManagerScript.instance.EnableRespawn();
             playerView.RPC("KillPlayer",RpcTarget.AllBuffered);
+            return true;
         }
+        return false;
     }
 
     [PunRPC]
@@ -74,7 +78,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public void RevivePlayer(){
         isAlive = true;
         playerSprite.enabled = true;
-        rigid.gravityScale = 1;
+        rigid.gravityScale = 5;
         gameObject.GetComponent<Collider2D>().enabled = true;
         playerCanvas.SetActive(true);
         canInput = true;
@@ -112,25 +116,27 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
             PlayerShoot();
             PlayerMove();
             PlayerJump();
-           //playerView.RPC("PlayerShoot",RpcTarget.All,null);
-           
         }
     }
 
     public void PlayerMove(){
         if(playerAnimation.GetBool("isShooting") == false){
-            var movement = new Vector3(Input.GetAxisRaw("Horizontal"),0);
-            transform.position += movement*playerSpeed*Time.deltaTime;
+            if(windowsPlatform){
+                var movement = new Vector3(Input.GetAxisRaw("Horizontal"),0);
+                transform.position += movement*playerSpeed*Time.deltaTime;
+            }else{
+                transform.position += mobileMovement*playerSpeed*Time.deltaTime;
+            }
             PlayerFlip();
         }
     }
 
     public void PlayerFlip(){
-        bool rightMovementPressed =Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
-        bool rightMovementUnpressed =Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow);
-        bool leftMovementPressed =Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
-        bool leftMovementUnpressed =Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow);
-        bool isPressingMovementKey = Input.GetKey(KeyCode.A)||Input.GetKey(KeyCode.D)||Input.GetKey(KeyCode.LeftArrow)||Input.GetKey(KeyCode.RightArrow);
+        bool rightMovementPressed  = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
+        bool rightMovementUnpressed= Input.GetKeyUp(KeyCode.D)   || Input.GetKeyUp(KeyCode.RightArrow);
+        bool leftMovementPressed   = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
+        bool leftMovementUnpressed = Input.GetKeyUp(KeyCode.A)   || Input.GetKeyUp(KeyCode.LeftArrow);
+        bool isPressingMovementKey = Input.GetKey(KeyCode.A)     || Input.GetKey(KeyCode.D)||Input.GetKey(KeyCode.LeftArrow)||Input.GetKey(KeyCode.RightArrow);
 
         if(isPressingMovementKey)
             playerAnimation.SetBool("isMoving",true);
@@ -170,17 +176,18 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     private void PlayerShoot(){
             if(Input.GetKeyDown(KeyCode.O) && canShoot()){
                 this.playerAnimation.SetBool("isShooting",true);
-                GameObject bullet = PhotonNetwork.Instantiate(this.playerBullet.name,this.bulletSpawn.transform.position,Quaternion.identity,0,setBulletDirection());
+                object[] data = new object[]{ bulletDirection,playerName.text};
+                GameObject bullet = PhotonNetwork.Instantiate(this.playerBullet.name,this.bulletSpawn.transform.position,Quaternion.identity,0,data);
             }else if(Input.GetKeyUp(KeyCode.O)){
                 this.playerAnimation.SetBool("isShooting",false);
             }
     }
 
-    private object[] setBulletDirection(){
+    /*private object[] setBulletDirection(){
         object[] dir = new object[1];
         dir[0]= this.bulletDirection;
         return dir;
-    }
+    }*/
     private bool canShoot(){
         if(playerAnimation.GetBool("isMoving") == false)
             return true;
@@ -190,6 +197,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     void OnCollisionEnter2D(Collision2D col){
         if(col.gameObject.tag == "Ground"){
             isGrounded = true;
+            playerAnimation.SetBool("isJumping",false);
         }
     }
 
@@ -199,7 +207,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    void PlayerJump(){
+    public void PlayerJump(){
         if((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow)) && isGrounded){
              rigid.AddForce(new Vector2(0,jumpForce),ForceMode2D.Force);
              playerAnimation.SetBool("isJumping",true);
@@ -207,4 +215,57 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
              playerAnimation.SetBool("isJumping",false);
         }
     }
+
+
+    #region MobileInputs
+    Vector3 mobileMovement=Vector3.zero;
+
+    public void On_RightMove(){
+        if(!playerAnimation.GetBool("isShooting")){
+            mobileMovement= new Vector3(1,0,transform.position.z);
+            playerView.RPC("PlayerFlipRPC_Right",RpcTarget.AllBuffered);
+            playerAnimation.SetBool("isMoving",true);
+            bulletDirection = new Vector2(1,0);
+        }
+    }
+
+    public void On_LeftMove(){
+        if(!playerAnimation.GetBool("isShooting")){
+            mobileMovement= new Vector3(-1,0,transform.position.z);
+            playerView.RPC("PlayerFlipRPC_Left",RpcTarget.AllBuffered);
+            playerAnimation.SetBool("isMoving",true);
+            bulletDirection = new Vector2(-1,0);
+        }
+    }
+
+    public void On_PointerExit(){
+        mobileMovement= new Vector3(0,0,transform.position.z);
+        playerAnimation.SetBool("isMoving",false);
+    }
+
+     public void PlayerJumpMobile(){
+        if(isGrounded){
+             rigid.AddForce(new Vector2(0,jumpForce),ForceMode2D.Force);
+             playerAnimation.SetBool("isJumping",true);
+        }
+    }
+
+    public void PlayerShootMobile(){
+          if(canShoot()){
+                this.playerAnimation.SetBool("isShooting",true);
+                object[] data = new object[]{ bulletDirection,playerName.text};
+                GameObject bullet = PhotonNetwork.Instantiate(this.playerBullet.name,this.bulletSpawn.transform.position,Quaternion.identity,0,data);
+            }
+    }
+
+    public void StopShooting(){
+        playerAnimation.SetBool("isShooting",false);
+    }
+
+    #endregion
+
+
+    
+    
+
 }

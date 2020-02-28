@@ -48,6 +48,7 @@ public class TimeOutManager : MonoBehaviourPun
     }
 
     public void playerIsAFK(){
-        timeOutCanvas.SetActive(true);
+        if(!(Application.internetReachability==NetworkReachability.NotReachable))
+            timeOutCanvas.SetActive(true);
     }
 }
